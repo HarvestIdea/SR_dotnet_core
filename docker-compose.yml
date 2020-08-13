@@ -1,0 +1,39 @@
+version: '3.8'
+
+networks:
+    dockerapi-dev:
+        driver: bridge
+
+services:
+    srdotnetcore:
+        image: srdotnetcore:latest
+        depends_on: 
+            - "postgres_image"
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        ports: 
+            - "5000:5000"
+        environment: 
+            DB_CONNECTION_STRING: "host=postgres_image;port=5432;database=mdb;username=sa;password=sa123*"
+        networks:
+            - dockerapi-dev
+
+    postgres_image:
+        image: postgres:latest
+        ports:
+            - "5432"
+        restart: always
+        volumes:
+            - db_volume:/var/lib/postgresql/database
+            - ./dbscripts/seed.sql :/docker-entrypoint-initdb.d/seed.sql
+        environment: 
+            POSTGRES_USER: "sa"
+            POSTGRES_PASSWORD: "sa123*"
+            POSTGRES_DB: "mdb"
+        networks:
+            - dockerapi-dev
+volumes:
+    db_volume:
+
+
